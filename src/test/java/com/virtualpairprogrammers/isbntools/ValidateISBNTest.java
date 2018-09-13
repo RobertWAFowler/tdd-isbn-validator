@@ -7,7 +7,6 @@ import static org.junit.Assert.assertTrue;
 
 public class ValidateISBNTest {
 
-
     @Test
     public void checkAValid10DigitISBN() {
         ValidateISBN validator = new ValidateISBN();

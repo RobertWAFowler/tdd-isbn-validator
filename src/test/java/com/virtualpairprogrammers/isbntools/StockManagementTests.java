@@ -1,5 +1,6 @@
 package com.virtualpairprogrammers.isbntools;
 
+import org.junit.Before;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -12,70 +13,61 @@ import static org.mockito.Mockito.when;
 
 public class StockManagementTests {
 
-	@Test
-	public void testCanGetACorrectLocatorCode() {
-		
-		ExternalISBNDataService testWebService = new ExternalISBNDataService() {
-			
-			@Override
-			public Book lookup(String isbn) {
-				return new Book(isbn, "Of Mice And Men", "J. Steinbeck");
-			}
-		};
-		
-		ExternalISBNDataService testDatabaseService = new ExternalISBNDataService() {
-			@Override
-			public Book lookup(String isbn) {
-				return null;
-			}
-		};
-		
+    private final String BOOK_ISBN_1 = "0140177396";
+    ExternalISBNDataService webService;
+    ExternalISBNDataService databaseService;
+    StockManager stockManager;
 
-		StockManager stockManager = new StockManager();
-		stockManager.setWebService(testWebService);
-		stockManager.setDatabaseService(testDatabaseService);
-		
-		String isbn = "0140177396";
-		String locatorCode = stockManager.getLocatorCode(isbn);
-		assertEquals("7396J4", locatorCode);
-	}
-	
-	@Test
-	public void databaseIsUsedIfDataIsPresent() {
-		ExternalISBNDataService databaseService = mock(ExternalISBNDataService.class);
-		ExternalISBNDataService webService = mock(ExternalISBNDataService.class);
-		
-		when(databaseService.lookup("0140177396")).thenReturn(new Book("0140177396","abc","abc"));
-		
-		StockManager stockManager = new StockManager();
-		stockManager.setWebService(webService);
-		stockManager.setDatabaseService(databaseService);
-		
-		String isbn = "0140177396";
-		String locatorCode = stockManager.getLocatorCode(isbn);
-		
-		verify(databaseService).lookup("0140177396");
-		verify(webService, never()).lookup(anyString());
-		
-	}
-	
-	@Test
-	public void webserviceIsUsedIfDataIsNotPresentInDatabase() {
-		ExternalISBNDataService databaseService = mock(ExternalISBNDataService.class);
-		ExternalISBNDataService webService = mock(ExternalISBNDataService.class);
-		
-		when(databaseService.lookup("0140177396")).thenReturn(null);
-		when(webService.lookup("0140177396")).thenReturn(new Book("0140177396","abc","abc"));
-		
-		StockManager stockManager = new StockManager();
-		stockManager.setWebService(webService);
-		stockManager.setDatabaseService(databaseService);
-		
-		String isbn = "0140177396";
-		String locatorCode = stockManager.getLocatorCode(isbn);
-		
-		verify(databaseService).lookup("0140177396");
-		verify(webService).lookup("0140177396");
-	}
-	
+    @Before
+    public void setup() {
+
+        System.out.println("In setup!!!");
+        webService = mock(ExternalISBNDataService.class);
+        databaseService = mock(ExternalISBNDataService.class);
+        stockManager = new StockManager();
+        stockManager.setWebService(webService);
+        stockManager.setDatabaseService(databaseService);
+    }
+
+    @Test
+    public void testCanGetACorrectLocatorCode() {
+
+        //Given
+        when(webService.lookup(BOOK_ISBN_1))
+                .thenReturn(new Book(BOOK_ISBN_1, "Of Mice And Men", "J. Steinbeck"));
+        when(databaseService.lookup(BOOK_ISBN_1)).thenReturn((null));
+
+        //When
+        String locatorCode = stockManager.getLocatorCode(BOOK_ISBN_1);
+
+        //Then
+        assertEquals("7396J4", locatorCode);
+    }
+
+    @Test
+    public void databaseIsUsedIfDataIsPresent() {
+
+        when(databaseService.lookup(BOOK_ISBN_1))
+                .thenReturn(new Book(BOOK_ISBN_1, "abc", "abc"));
+
+        String locatorCode = stockManager.getLocatorCode(BOOK_ISBN_1);
+
+        verify(databaseService).lookup(BOOK_ISBN_1);
+        verify(webService, never()).lookup(anyString());
+
+    }
+
+    @Test
+    public void webserviceIsUsedIfDataIsNotPresentInDatabase() {
+
+        when(databaseService.lookup(BOOK_ISBN_1)).thenReturn(null);
+        when(webService.lookup(BOOK_ISBN_1))
+                .thenReturn(new Book(BOOK_ISBN_1, "abc", "abc"));
+
+        String locatorCode = stockManager.getLocatorCode(BOOK_ISBN_1);
+
+        verify(databaseService).lookup(BOOK_ISBN_1);
+        verify(webService).lookup(BOOK_ISBN_1);
+    }
+
 }

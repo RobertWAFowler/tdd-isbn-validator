@@ -1,19 +1,12 @@
 package com.virtualpairprogrammers.isbntools;
 
+import lombok.Setter;
+
+@Setter
 public class StockManager {
 
     private ExternalISBNDataService webService;
     private ExternalISBNDataService databaseService;
-
-    public void setWebService(ExternalISBNDataService service) {
-        this.webService = service;
-    }
-
-
-    public void setDatabaseService(ExternalISBNDataService databaseService) {
-        this.databaseService = databaseService;
-    }
-
 
     public String getLocatorCode(String isbn) {
         Book book = databaseService.lookup(isbn);
